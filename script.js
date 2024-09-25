@@ -3,17 +3,21 @@ const taskTitle = document.getElementById('taskTitle');
 const taskPriority = document.getElementById('taskPriority');
 const addTaskButton = document.getElementById('addTask');
 
+window.onload = loadTasks;
+
 addTaskButton.addEventListener('click', () => {
     const title = taskTitle.value;
     const priority = taskPriority.value;
 
     if (title) {
         addTask(title, priority);
+        saveTask(title, priority); 
         taskTitle.value = '';
     } else {
         alert('Enter title.');
     }
 });
+
 
 function addTask(title, priority) {
     const listItem = document.createElement('li');
@@ -37,7 +41,7 @@ function addTask(title, priority) {
     editPriority.style.display = 'none';
 
     const editButton = document.createElement('button');
-    editButton.classList.add('edit')
+    editButton.classList.add('edit');
     editButton.innerHTML = '<img src="UI/edit.png" alt="">';
     editButton.onclick = () => {
         if (editInput.style.display === 'none') {
@@ -54,17 +58,53 @@ function addTask(title, priority) {
             editPriority.style.display = 'none';
             titleSpan.style.display = 'inline';
             editButton.innerHTML = '<img src="UI/edit.png" alt="">';
+            updateTask(title, newTitle, newPriority);
         }
     };
 
     const deleteButton = document.createElement('button');
-    deleteButton.classList.add('bin')
+    deleteButton.classList.add('bin');
     deleteButton.innerHTML = '<img src="UI/bin.png" alt="">';
-    deleteButton.onclick = () => taskList.removeChild(listItem);
+    deleteButton.onclick = () => {
+        taskList.removeChild(listItem);
+        deleteTask(title);
+    };
 
     listItem.appendChild(editInput);
     listItem.appendChild(editPriority);
     listItem.appendChild(editButton);
     listItem.appendChild(deleteButton);
     taskList.appendChild(listItem);
+}
+
+
+function saveTask(title, priority) {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.push({ title, priority });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+
+function loadTasks() {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks.forEach(task => addTask(task.title, task.priority));
+}
+
+
+function updateTask(oldTitle, newTitle, newPriority) {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks = tasks.map(task => {
+        if (task.title === oldTitle) {
+            return { title: newTitle, priority: newPriority };
+        }
+        return task;
+    });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+}
+
+
+function deleteTask(title) {
+    let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    tasks = tasks.filter(task => task.title !== title);
+    localStorage.setItem('tasks', JSON.stringify(tasks));
 }
